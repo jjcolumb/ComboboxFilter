@@ -1,0 +1,53 @@
+﻿@page "/"
+
+<DxComboBox Data="@Data"
+            @bind-Value="@SelectedEmployee"
+            @oninput="@OnInput"
+            CssClass="cw-480"
+            FilteringMode="DataGridFilteringMode.None"
+            AllowUserInput="true"
+            DisplayFormat="{0} {1}"            
+            EditFormat="{0} {1}">
+    <DxListEditorColumn FieldName="@nameof(Employee.Name)"
+                        Caption="Name"/>
+    <DxListEditorColumn FieldName="@nameof(Employee.Title)"
+                        Caption="Title" />
+</DxComboBox>
+
+@code {
+    IEnumerable<Employee> Data { get; set; }
+    List<Employee> dataSource = new List<Employee>();
+    Employee SelectedEmployee { get; set; }
+
+    void OnInput(ChangeEventArgs e) {
+        string value = e.Value.ToString();
+        var matches = System.Text.RegularExpressions.Regex.Matches(value, @"(\([^)]+?\)|[^(]+)");
+
+        if(matches.Count > 1) {
+            Data = dataSource.Where(i => i.Name.ToLower().Contains(matches[0].Value.Trim().Replace("(", "").Replace(")", "").ToLower()) && i.Title.ToLower().Contains(matches[1].Value.Trim().Replace("(", "").Replace(")", "").ToLower()));
+        }
+        else if(matches.Count == 1) {
+            Data = dataSource.Where(i => i.Name.ToLower().Contains(matches[0].Value.Trim().Replace("(", "").Replace(")", "").ToLower()));
+        }
+        else {
+            Data = new List<Employee>();
+        }
+    }
+
+
+    protected override void OnInitialized() {
+        dataSource.Add(new Employee() { Name = "Nancy Drewmore", Title = "Technical Director" });
+        dataSource.Add(new Employee() { Name = "Nancy Davolio", Title = "Commercial Director" });
+        dataSource.Add(new Employee() { Name = "Nancy Cooper", Title = "Financial Director" });
+        dataSource.Add(new Employee() { Name = "Nancy Drewmore", Title = "Junior Delevoper" });
+        dataSource.Add(new Employee() { Name = "Nancy Davolio", Title = "Middle Delevoper" });
+        dataSource.Add(new Employee() { Name = "Nancy Cooper", Title = "Senior Developer" });
+
+        Data = dataSource;
+    }
+
+    public class Employee {
+        public string Name { get; set; }
+        public string Title { get; set; }
+    }
+}
